@@ -58,35 +58,38 @@ export default function KanbanBoard() {
     initApp();
   }, []);
 
-const initApp = async () => {
-  try {
-    let uid = localStorage.getItem('kanban_user');
-
-    if (!uid) {
-      const { data, error } = await supabase.auth.signInAnonymously();
-      if (error) throw error;
-
-      uid = data.user.id;
-      localStorage.setItem('kanban_user', uid);
+  // Initialize app and sign in user
+  const initApp = async () => {
+    try {
+      // Get current user session
+      const { data: { user }, error: userErr } = await supabase.auth.getUser();
+      
+      if (userErr || !user) {
+        // If no session, sign in anonymously
+        const { data, error: authErr } = await supabase.auth.signInAnonymously();
+        if (authErr) throw authErr;
+        setUserId(data.user.id);
+        await loadTasks(data.user.id);
+      } else {
+        // User already signed in
+        setUserId(user.id);
+        await loadTasks(user.id);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setUserId(uid);
-    await loadTasks(uid);
-
-  } catch (err) {
-    console.error(err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // Load tasks from database
+  // Load tasks from database - FILTERED BY USER
   const loadTasks = async (uid) => {
     try {
       const { data, error: fetchErr } = await supabase
         .from('tasks')      
-        .select('*')        
+        .select('*')
+        .eq('user_id', uid)  // FILTER BY USER ID FOR RLS
         .order('created_at', { ascending: true }); 
       
       if (fetchErr) throw fetchErr;
@@ -112,46 +115,42 @@ const initApp = async () => {
   };
 
   // Create new task
-const createTask = async (e) => {
-  e.preventDefault();
+  const createTask = async (e) => {
+    e.preventDefault();
 
-  if (!newTask.title.trim()){
-    setError('Task title is required');
-    return;
-  }
+    if (!newTask.title.trim()){
+      setError('Task title is required');
+      return;
+    }
 
-  try {
-    const { data: { user }, error: userErr } = await supabase.auth.getUser();
-    if (userErr || !user) throw new Error("User not found");
+    try {
+      const { data, error: insertErr } = await supabase
+        .from('tasks')
+        .insert([{
+          user_id: userId,  // Use the userId from state
+          title: newTask.title,
+          description: newTask.description || null,
+          priority: newTask.priority,
+          due_date: newTask.dueDate || null,
+          status: 'todo'
+        }])
+        .select();
 
-    const { data, error: insertErr } = await supabase
-      .from('tasks')
-      .insert([{
-        user_id: user.id,
-        title: newTask.title,
-        description: newTask.description || null,
-        priority: newTask.priority,
-        due_date: newTask.dueDate || null,
-        status: 'todo'
-      }])
-      .select();
+      if (insertErr) throw insertErr;
 
-    if (insertErr) throw insertErr;
+      setTasks(prev => ({
+        ...prev,
+        todo: [...prev.todo, data[0]]
+      }));
 
-    setTasks(prev => ({
-      ...prev,
-      todo: [...prev.todo, data[0]]
-    }));
-
-    setNewTask({ title: '', description: '', priority: 'normal', dueDate: '' });
-    setShowNewTaskForm(false);
-    setError(null);
-
-  } catch (err) {
-    console.error('Error creating task:', err);
-    setError(err.message);
-  }
-};
+      setNewTask({ title: '', description: '', priority: 'normal', dueDate: '' });
+      setShowNewTaskForm(false); 
+      setError(null);            
+    } catch (err) {
+      console.error('Error creating task:', err);
+      setError(err.message);
+    }
+  };
 
   // Delete task
   const deleteTask = async (taskId, status) => {
@@ -223,7 +222,6 @@ const createTask = async (e) => {
     
     return daysUntil > 0 && daysUntil <= 3;
   };
-
 
   // Get relative date text (Today, Tomorrow, In 3 days, etc)
   const getRelativeDate = (date) => {
