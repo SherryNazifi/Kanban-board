@@ -60,20 +60,27 @@ export default function KanbanBoard() {
 
   // Initialize app and sign in user
   const initApp = async () => {
-  try {
-    const { data, error: authErr } = await supabase.auth.signInAnonymously();
-    if (authErr) throw authErr;
+    try {
+      // Check if we already have a user ID saved
+      let uid = localStorage.getItem('kanban_user_id');
 
-    const uid = data.user.id;
-    setUserId(uid);
-    await loadTasks(uid);
-  } catch (err) {
-    console.error('Error:', err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+      if (!uid) {
+        // Only sign in if we don't have a saved user ID
+        const { data, error: authErr } = await supabase.auth.signInAnonymously();
+        if (authErr) throw authErr;
+        uid = data.user.id;
+        localStorage.setItem('kanban_user_id', uid);
+      }
+
+      setUserId(uid);
+      await loadTasks(uid);
+    } catch (err) {
+      console.error('Error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Load tasks from database - FILTERED BY USER
   const loadTasks = async (uid) => {
