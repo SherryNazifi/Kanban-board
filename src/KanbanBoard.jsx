@@ -118,42 +118,46 @@ export default function KanbanBoard() {
   };
 
   // Create new task
-  const createTask = async (e) => {
-    e.preventDefault();
+const createTask = async (e) => {
+  e.preventDefault();
 
-    if (!newTask.title.trim()){
-      setError('Task title is required');
-      return;
-    }
+  if (!newTask.title.trim()){
+    setError('Task title is required');
+    return;
+  }
 
-    try {
-      const {data, error: insertErr} = await supabase
-        .from('tasks')
-        .insert([{
-          user_id: userId,
-          title: newTask.title,
-          description: newTask.description || null,
-          priority: newTask.priority,
-          due_date: newTask.dueDate || null,
-          status: 'todo'
-        }])
-        .select();
+  try {
+    const { data: { user }, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !user) throw new Error("User not found");
 
-      if (insertErr) throw insertErr;
+    const { data, error: insertErr } = await supabase
+      .from('tasks')
+      .insert([{
+        user_id: user.id,
+        title: newTask.title,
+        description: newTask.description || null,
+        priority: newTask.priority,
+        due_date: newTask.dueDate || null,
+        status: 'todo'
+      }])
+      .select();
 
-      setTasks(prev => ({
-        ...prev,
-        todo: [...prev.todo, data[0]]
-      }));
+    if (insertErr) throw insertErr;
 
-      setNewTask({ title: '', description: '', priority: 'normal', dueDate: '' });
-      setShowNewTaskForm(false); 
-      setError(null);            
-    } catch (err) {
-      console.error('Error creating task:', err);
-      setError(err.message);
-    }
-  };
+    setTasks(prev => ({
+      ...prev,
+      todo: [...prev.todo, data[0]]
+    }));
+
+    setNewTask({ title: '', description: '', priority: 'normal', dueDate: '' });
+    setShowNewTaskForm(false);
+    setError(null);
+
+  } catch (err) {
+    console.error('Error creating task:', err);
+    setError(err.message);
+  }
+};
 
   // Delete task
   const deleteTask = async (taskId, status) => {
