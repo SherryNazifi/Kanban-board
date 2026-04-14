@@ -60,20 +60,23 @@ export default function KanbanBoard() {
 
  const initApp = async () => {
   try {
-    const savedUserId = localStorage.getItem('user_id');
 
-    if (savedUserId) {
-      setUserId(savedUserId);
-      await loadTasks(savedUserId);
+    const { data: { session } } = await supabase.auth.getSession();
+
+    let currentUser;
+
+    if (session?.user) {
+      currentUser = session.user;
     } else {
-      // create new anonymous user
-      const { data: { user }, error } = await supabase.auth.signInAnonymously();
+      // create new anonymous user only if needed
+      const { data, error } = await supabase.auth.signInAnonymously();
       if (error) throw error;
 
-      localStorage.setItem('user_id', user.id); // 🔥 save it
-      setUserId(user.id);
-      await loadTasks(user.id);
+      currentUser = data.user;
     }
+
+    setUserId(currentUser.id);
+    await loadTasks(currentUser.id);
 
   } catch (err) {
     console.error(err);
