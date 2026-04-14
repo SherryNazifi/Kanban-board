@@ -60,19 +60,26 @@ export default function KanbanBoard() {
 
   // Initialize app and sign in user
   const initApp = async () => {
-    try {
-      const { data: { user }, error: authErr } = await supabase.auth.signInAnonymously();
-      if (authErr) throw authErr;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session?.user) {
+      setUserId(session.user.id);
+      await loadTasks(session.user.id);
+    } else {
+      const { data: { user }, error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
 
       setUserId(user.id);
       await loadTasks(user.id);
-    } catch (err) {
-      console.error('Error:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
     }
-  };
+
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Load tasks from database
   const loadTasks = async (uid) => {
