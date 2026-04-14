@@ -58,25 +58,20 @@ export default function KanbanBoard() {
     initApp();
   }, []);
 
- const initApp = async () => {
+const initApp = async () => {
   try {
+    let uid = localStorage.getItem('kanban_user');
 
-    const { data: { session } } = await supabase.auth.getSession();
-
-    let currentUser;
-
-    if (session?.user) {
-      currentUser = session.user;
-    } else {
-      // create new anonymous user only if needed
+    if (!uid) {
       const { data, error } = await supabase.auth.signInAnonymously();
       if (error) throw error;
 
-      currentUser = data.user;
+      uid = data.user.id;
+      localStorage.setItem('kanban_user', uid);
     }
 
-    setUserId(currentUser.id);
-    await loadTasks(currentUser.id);
+    setUserId(uid);
+    await loadTasks(uid);
 
   } catch (err) {
     console.error(err);
@@ -92,7 +87,6 @@ export default function KanbanBoard() {
       const { data, error: fetchErr } = await supabase
         .from('tasks')      
         .select('*')        
-        .eq('user_id', uid) 
         .order('created_at', { ascending: true }); 
       
       if (fetchErr) throw fetchErr;
