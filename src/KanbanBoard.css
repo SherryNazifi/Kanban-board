@@ -1,0 +1,45 @@
+/* Kanban Board Styles */
+
+/* Animations for drag and drop */
+.react-beautiful-dnd-draggable--is-dragging {
+  transform: rotate(0deg);
+}
+
+/* Task cards, base styles */
+.task-card {
+  transition: all 0.2s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Column droppable areas */
+.column-droppable {
+  min-height: 400px;
+  transition: background-color 0.2s ease;
+}
+
+.column-droppable--is-dragging-over {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Scrolling */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
