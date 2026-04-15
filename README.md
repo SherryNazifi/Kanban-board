@@ -63,3 +63,12 @@ Due to limitations with anonymous session persistence, tasks may not always appe
 - Labels and tags
 - User assignment
 - Mobile responsiveness
+
+
+## Screenshots
+
+### Kanban Board
+![Board](desktop/imgs/sc1.png)
+
+### Adding a New Task
+![Board](desktop/imgs/sc2.png)
