@@ -68,7 +68,7 @@ Due to limitations with anonymous session persistence, tasks may not always appe
 ## Screenshots
 
 ### Kanban Board
-![Board](desktop/imgs/sc1.png)
+![Board](images/sc1.png)
 
 ### Adding a New Task
-![Board](desktop/imgs/sc2.png)
+![Board](images/sc2.png)
