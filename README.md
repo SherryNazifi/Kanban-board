@@ -1,16 +1,65 @@
-# React + Vite
+# Kanban Task Manager
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern Kanban-style task management application built with React and Supabase.
 
-Currently, two official plugins are available:
+## Live Demo
+https://kanbanboard-peach-ten.vercel.app/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## GitHub Repo
+https://github.com/SherryNazifi/Kanban-board
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Drag-and-drop task management
+- Four workflow columns:
+  - To Do
+  - In Progress
+  - In Review
+  - Done
+- Task creation with:
+  - title
+  - description
+  - priority
+  - due date
+- Task deletion
+- Supabase backend integration
+- Anonymous user authentication
 
-## Expanding the ESLint configuration
+## Bonus Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Task statistics (total, completed, overdue)
+- Relative due dates (Today, Tomorrow, etc.)
+- Overdue and due-soon indicators
+- Clean and modern UI design
+
+## Tech Stack
+
+- React
+- Supabase
+- @hello-pangea/dnd
+- Vercel (deployment)
+
+## Database Schema
+
+tasks (
+  id uuid primary key,
+  user_id uuid,
+  title text,
+  description text,
+  status text,
+  priority text,
+  due_date date,
+  created_at timestamp
+)
+
+## Notes
+
+Tasks are stored in Supabase and tied to user sessions.
+Due to limitations with anonymous session persistence, tasks may not always appear after a page refresh in the deployed environment.
+
+## Future Improvements
+- Stable session handling
+- Search and filtering
+- Labels and tags
+- User assignment
+- Mobile responsiveness
